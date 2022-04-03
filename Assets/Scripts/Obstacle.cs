@@ -7,6 +7,7 @@ public class Obstacle : MonoBehaviour
     public string path = "center";
     public float moveInterval = 1f;
     public string type = "press";
+    public AudioClip dieSFX;
 
     private GameObject player;
     private Vector3 targetPosition;
@@ -69,6 +70,7 @@ public class Obstacle : MonoBehaviour
 
     private void Die()
     {
+        AudioSource.PlayClipAtPoint(dieSFX, gameObject.transform.position, 1f);
         Destroy(gameObject);
         if (type == "press")
         {
