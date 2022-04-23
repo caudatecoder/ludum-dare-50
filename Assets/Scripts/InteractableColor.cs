@@ -1,21 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(CanvasGroup))]
+[RequireComponent(typeof(Button))]
 public class InteractableColor : MonoBehaviour
-{
-    public Button parentButton;
-    public Color activeColor;
-    public Color inactiveColor;
+{   
+    private Button button;
+    private CanvasGroup canvasGroup;
 
     void Start()
     {
-        GetComponent<Text>().color = parentButton.interactable ? activeColor : inactiveColor;
+        button = GetComponent<Button>();
+        canvasGroup = GetComponent<CanvasGroup>();
+
+
+        canvasGroup.alpha = button.interactable ? 1f : 0.2f;
     }
 
     void Update()
     {
-        GetComponent<Text>().color = parentButton.interactable ? activeColor : inactiveColor;
+        canvasGroup.alpha = button.interactable ? 1f : 0.2f;
     }
 }

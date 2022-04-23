@@ -313,7 +313,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 26.36319, y: 36.59999}
+  m_AnchoredPosition: {x: -7, y: 36.59999}
   m_SizeDelta: {x: 271.5399, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &318228370
@@ -786,8 +786,8 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1.5
   m_Text: "I hope this game was at least a little funny as that's something that
-    helps us cope in these dark times.\n\nThe current war in Ukraine is a tragedy
-    caused in large extent by propaganda and supression of freedom of speach.\n\nI
+    helps us cope in these dark times\n\nThe current war in Ukraine is a tragedy
+    caused in large extent by propaganda and supression of freedom of speech\n\nI
     as a russian and as a human \ncondemn actions of Russian Federation\n\n#StandWithUkraine\nConsider
     donating to help millions of victims of this war"
 --- !u!222 &1191571054

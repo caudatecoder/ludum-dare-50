@@ -293,6 +293,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   path: center
-  moveInterval: 1
   type: kid
-  dieSFX: {fileID: 8300000, guid: bebb7498b9208f14497bbff193cb86fc, type: 3}
+  deathFx: {fileID: 3825351314994006942, guid: 4824546f52cda8a4dbe11040e3f4831c, type: 3}

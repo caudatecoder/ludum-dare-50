@@ -5,13 +5,15 @@ using UnityEngine;
 public class Obstacle : MonoBehaviour
 {
     public string path = "center";
-    public float moveInterval = 1f;
     public string type = "press";
-    public AudioClip dieSFX;
+    public AudioClip missedCopSFX;
+    public AudioClip missedPressSFX;
+    public GameObject deathFx;
 
     private GameObject player;
     private Vector3 targetPosition;
     private InfoSystem system;
+    private int moveCount;
 
     private void Awake()
     {
@@ -30,7 +32,7 @@ public class Obstacle : MonoBehaviour
 
         }
 
-        InvokeRepeating("Move", moveInterval, moveInterval);
+        system.stepEvent.AddListener(Move);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -43,6 +45,13 @@ public class Obstacle : MonoBehaviour
 
     private void Move()
     {
+        moveCount++;
+
+        if (type == "press" && moveCount % 2 == 1)
+        {
+            return;
+        }
+
         Vector3 heading = targetPosition - gameObject.transform.position;
         Vector3 direction = heading / heading.magnitude;
 
@@ -60,17 +69,19 @@ public class Obstacle : MonoBehaviour
         Destroy(gameObject);
         if (type == "press")
         {
+            AudioSource.PlayClipAtPoint(missedPressSFX, gameObject.transform.position, 2f);
             system.PressMissed();
         }
         else if (type == "cop")
         {
+            AudioSource.PlayClipAtPoint(missedCopSFX, gameObject.transform.position, 1f);
             system.CopMissed();
         }
     }
 
     private void Die()
     {
-        AudioSource.PlayClipAtPoint(dieSFX, gameObject.transform.position, 1f);
+        Instantiate(deathFx, transform.position, Quaternion.identity);
         Destroy(gameObject);
         if (type == "press")
         {

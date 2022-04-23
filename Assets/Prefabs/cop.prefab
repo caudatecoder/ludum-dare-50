@@ -119,9 +119,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   path: center
-  moveInterval: 0.7
   type: cop
-  dieSFX: {fileID: 8300000, guid: f325096874fe1ca43b9b880557694756, type: 3}
+  missedCopSFX: {fileID: 8300000, guid: 1fa9d88e946adba479d0e1cca028f6ce, type: 3}
+  missedPressSFX: {fileID: 8300000, guid: b3f8d1f5867e02947b4175d497d33f27, type: 3}
+  deathFx: {fileID: 7875316039413192292, guid: d2c4042a022cddb48ac746cf8af3b655, type: 3}
 --- !u!50 &8714918079532116523
 Rigidbody2D:
   serializedVersion: 4

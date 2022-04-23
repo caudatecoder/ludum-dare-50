@@ -1,7 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class InfoSystem : MonoBehaviour
 {
@@ -9,6 +9,7 @@ public class InfoSystem : MonoBehaviour
     public int mediaControl = 30;
     public int policeForce = 50;
     public List<string> staticEffects;
+    public GameObject playerRenderer;
 
     [Header("UI")]
     public Text populatiryIndicator;
@@ -19,13 +20,18 @@ public class InfoSystem : MonoBehaviour
     public Text eventTitle;
     public Button SeparatistButton;
     public Button WarButton;
+    public GameObject WarWrapper;
     public Button PoliceButton;
     public Button LawButton;
     public Button CaptureButton;
     public Button PoisonButton;
 
+    public GameObject newsScreen;
+    private bool mediaControlWasHigh = false;
+
     public GameObject endgameScreen;
     public Text endgameText;
+    public GameObject additionalEndgameText;
 
     [Header("Music")]
     public AudioSource theme1;
@@ -41,22 +47,41 @@ public class InfoSystem : MonoBehaviour
     private bool separatistSupported = false;
     public bool warStarted = false;
 
+    public UnityEvent stepEvent;
+
     private GameObject player;
+    private PlayerUI playerUI;
 
     private int eventsCount = 0;
 
     private void Start()
     {
+        if (stepEvent == null)
+            stepEvent = new UnityEvent();
+
         CheckLimits();
         Invoke("NextEvent", 30f);
+        InvokeRepeating("Step", 0.5f, 0.5f);
 
         player = GameObject.FindWithTag("Player");
+        playerUI = player.GetComponent<PlayerUI>();
+    }
+
+    private void Step()
+    {
+        stepEvent.Invoke();
     }
 
     public void PressBusted()
     {
-        if (negativeEffects) { popularity -= 1; }
+        if (negativeEffects) { 
+            popularity -= 1;
+            playerUI.PushMessage("-1", "pop", false);
+
+        }
         mediaControl += 3;
+        playerUI.PushMessage("+3", "media", true);
+
 
         CheckLimits();
     }
@@ -64,9 +89,12 @@ public class InfoSystem : MonoBehaviour
     public void CopBusted()
     {
         popularity += 3;
+        playerUI.PushMessage("+3", "pop", true);
+
         if (negativeEffects)
         {
             policeForce -= 3;
+            playerUI.PushMessage("-3", "cop", false);
         }
 
         CheckLimits();
@@ -75,7 +103,9 @@ public class InfoSystem : MonoBehaviour
     public void PressMissed()
     {
         mediaControl -= 2;
+        playerUI.PushMessage("-2", "media", false);
         popularity -= 3;
+        playerUI.PushMessage("-3", "pop", false);
 
         CheckLimits();
     }
@@ -83,6 +113,7 @@ public class InfoSystem : MonoBehaviour
     public void CopMissed()
     {
         policeForce += 1;
+        playerUI.PushMessage("+1", "cop", true);
 
         CheckLimits();
     }
@@ -99,13 +130,13 @@ public class InfoSystem : MonoBehaviour
 
         if (warStarted)
         {
-            EndGame("Your war was a failure. The corruption consumed everything. You hide in a bunker afraid of your own shadow. There's only one way out of this...");
+            EndGame("Your war was a failure. The corruption consumed everything. You hide in a bunker afraid of your own shadow. There's only one way out of this...", true);
             return;
         }
 
         if (eventsCount > 7)
         {
-            EndGame("Your sickness consumed you. Soon enough your crimes will be revealed and your legacy destroyed.\nNice try though");
+            EndGame("Your sickness consumed you. Soon enough your crimes will be revealed and your legacy destroyed.\nNice try though", true);
             return;
         }
 
@@ -125,20 +156,26 @@ public class InfoSystem : MonoBehaviour
 
     public void AfterEvent()
     {
-        Time.timeScale = 1f;
-        AudioListener.pause = false;
-        eventsBoard.SetActive(false);
+        Unpause();
         Invoke("NextEvent", 30f);
     }
 
-    // STRATEGY
+    public void Unpause()
+    {
+        Time.timeScale = 1f;
+        AudioListener.pause = false;
+        eventsBoard.SetActive(false);
+        newsScreen.SetActive(false);
+    }
+
+    #region STRATEGY
     public void SupportSeparatists()
     {
         if (policeForce > 50 && mediaControl > 60)
         {
             SeparatistButton.interactable = false;
             separatistSupported = true;
-            WarButton.gameObject.SetActive(true);
+            WarWrapper.SetActive(true);
 
             popularity += 10;
         }
@@ -184,7 +221,7 @@ public class InfoSystem : MonoBehaviour
         {
             CaptureButton.interactable = false;
             territoryCaptured = true;
-            WarButton.gameObject.SetActive(true);
+            WarWrapper.SetActive(true);
 
             popularity += 20;
         }
@@ -203,8 +240,9 @@ public class InfoSystem : MonoBehaviour
 
             mediaControl = 100;
             popularity += 20;
-            player.transform.localScale = new Vector3(5, 1, 1);
-            player.GetComponent<Animator>().SetBool("Bloody", true);
+            playerRenderer.transform.localScale = new Vector3(5, 1, 1);
+            player.GetComponent<BoxCollider2D>().size = new Vector2(5, 1);
+            playerRenderer.GetComponent<Animator>().SetBool("Bloody", true);
 
             theme2.Stop();
             theme3.Play();
@@ -224,7 +262,8 @@ public class InfoSystem : MonoBehaviour
             popularity -= 5;
             mediaControl -= 10;
             lawChanged = true;
-            player.transform.localScale = new Vector3(3, 1, 1);
+            player.GetComponent<BoxCollider2D>().size = new Vector2(3, 1);
+            playerRenderer.transform.localScale = new Vector3(3, 1, 1);
 
             theme1.Stop();
             theme2.Play();
@@ -234,7 +273,7 @@ public class InfoSystem : MonoBehaviour
     }
 
     public bool CanChangeLaw() { return !lawChanged && popularity > 50 && mediaControl > 70; }
-    // END STRATEGY
+    #endregion
 
     public void CheckLimits()
     {
@@ -263,8 +302,15 @@ public class InfoSystem : MonoBehaviour
         {
             negativeEffects = false;
             staticEffects.Add("Media control > 70: stomp em all without consequences!");
+
+            if (!mediaControlWasHigh)
+            {
+                mediaControlWasHigh = true;
+                ShowNewsBoard();
+            }
         } else
         {
+            mediaControlWasHigh = false;
             if (mediaControl < 50)
             {
                 popularity -= 1;
@@ -321,7 +367,14 @@ public class InfoSystem : MonoBehaviour
         }
     }
 
-    private void EndGame(string message)
+    private void ShowNewsBoard()
+    {
+        Time.timeScale = 0f;
+        AudioListener.pause = true;
+        newsScreen.SetActive(true);
+    }
+
+    private void EndGame(string message, bool intendedEnding = false)
     {
         Time.timeScale = 0f;
         theme1.Stop();
@@ -330,6 +383,8 @@ public class InfoSystem : MonoBehaviour
         theme4.Play();
 
         endgameScreen.SetActive(true);
+        if (intendedEnding) { additionalEndgameText.SetActive(true); }
+
         endgameText.text = message;
     }
 }
